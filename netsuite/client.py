@@ -419,6 +419,94 @@ class NetSuite:
         svc = getattr(self.service, service_name)
         return svc(*args, _soapheaders=self.generate_passport(), **kw)
 
+    def search(
+        self,
+        searchRecord: dict,
+        returnAll: bool = False,
+    ) -> List:
+        """
+        Search for NetSuite records using `searchRecord` dictionary.
+
+        Args:
+            searchRecord: Dictionary containing search parameters
+                defined and formatted by the NetSuite WSDL. Either a
+                native Python dict or the returned object from this
+                package's `NetSuite.Common.TransactionSearch` (or
+                similar) is acceptable.
+        Returns:
+            List of `zeep.xsd.ComplexType`.
+        """
+
+        def extract_records(response):
+            record_list = response['body']['searchResult']['recordList']
+            return record_list['record'] if record_list else []
+
+        if not searchRecord:
+            raise ValueError('Missing `searchRecord`')
+
+        logger.info('Fetching search results, this may take a few moments ...')
+
+        response = self.request(
+            'search',
+            searchRecord=searchRecord,
+        )
+
+        searchResult = response['body']['searchResult']
+        if not searchResult['status']['isSuccess']:
+            for error in searchResult['status']['statusDetail']:
+                raise RuntimeError(f'{error["code"]}: {error["message"]}')
+
+        records = extract_records(response)
+
+        pageIndex = 1
+        searchId = searchResult['searchId']
+        pageSize = searchResult['pageSize'] or 0
+        totalRecords = searchResult['totalRecords']
+        totalPages = searchResult['totalPages']
+
+        if returnAll:
+            while pageIndex < totalPages:
+                pageIndex += 1
+                logger.info(f'Fetching search results, page {pageIndex} of {totalPages}')
+                response = self.searchMoreWithId(
+                    searchId=searchId,
+                    pageIndex=pageIndex,
+                )
+                records.extend(extract_records(response))
+        elif totalRecords > pageSize:
+            logger.info(f'Fetched {pageSize} records and skipped remaining {totalRecords - pageSize} records.')
+            logger.info('Use `returnAll=True` for return all records.')
+
+        return records
+
+    def searchMoreWithId(
+        self,
+        searchId: str,
+        pageIndex: int = 1,
+    ) -> None:
+        """
+        Paginate through remaining search results using a `searchId` str.
+
+        Args:
+            searchId: Unique ID provided by NetSuite to retrieve a
+                previously performed search. Search IDs expire if they
+                have not been used within 15 minutes of their creation.
+            pageIndex: An index that specifies which page in the search
+                to return.
+        Returns:
+            Search response returned by NetSuite. Record list can be
+            found nested at response['body']['searchResult']['recordList']
+        """
+
+        if not searchId:
+            raise ValueError('Missing `searchId`')
+
+        return self.request(
+            'searchMoreWithId',
+            searchId=searchId,
+            pageIndex=pageIndex,
+        )
+
     @WebServiceCall(
         'body.readResponseList.readResponse',
         extract=lambda resp: [
