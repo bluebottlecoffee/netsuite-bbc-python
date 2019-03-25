@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup_kwargs = dict(
     name='netsuite-bbc-python',
-    version='0.2.3',
+    version='1.0.0',
     description='Wrapper around Netsuite SuiteTalk Web Services',
-    packages=['netsuite'],
+    packages=['netsuite_bbc'],
     include_package_data=True,
     author='Jacob Magnusson',
     author_email='m@jacobian.se',
