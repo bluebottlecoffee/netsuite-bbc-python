@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.3 (2019-03-25)
+
+* Feature: Added 'search' and 'searchMoreWithId' methods.
+* Feature: Added HistoryPlugin to client object to retrieve raw responses.
+
 ## 0.2.2 (2018-12-11)
 
 * Feature: Added `get`, `getAll`, `add`, `upsert` and `upsertList` methods. Big thanks go out to @matmunn for the original PR. (#6)

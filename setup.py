@@ -1,14 +1,14 @@
 from setuptools import setup
 
 setup_kwargs = dict(
-    name='netsuite',
-    version='0.2.2',
+    name='netsuite-bbc-python',
+    version='0.2.3',
     description='Wrapper around Netsuite SuiteTalk Web Services',
     packages=['netsuite'],
     include_package_data=True,
     author='Jacob Magnusson',
     author_email='m@jacobian.se',
-    url='https://github.com/jmagnusson/netsuite',
+    url='https://github.com/bluebottlecoffee/netsuite-bbc-python',
     license='BSD',
     platforms='any',
     install_requires=[
