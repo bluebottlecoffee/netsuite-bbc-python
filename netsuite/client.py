@@ -9,6 +9,7 @@ import requests
 import zeep
 from zeep.cache import SqliteCache
 from zeep.xsd.valueobjects import CompoundValue
+from zeep.plugins import HistoryPlugin
 
 from . import constants, helpers, passport
 from .config import Config
@@ -95,6 +96,8 @@ class NetSuite:
         self.__wsdl_url = wsdl_url
         self.__cache = cache
         self.__session = session
+
+        self.history = HistoryPlugin(maxlen=10)
 
     @cached_property
     def wsdl_url(self) -> str:
@@ -191,6 +194,7 @@ class NetSuite:
         client = zeep.Client(
             self.wsdl_url,
             transport=self.transport,
+            plugins=[self.history],
         )
         self._set_default_soapheaders(
             client,
