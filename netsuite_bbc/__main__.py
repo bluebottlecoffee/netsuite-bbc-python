@@ -5,9 +5,9 @@ import IPython
 import argh
 import traitlets
 
-import netsuite
-from netsuite import config
-from netsuite.constants import DEFAULT_INI_PATH, DEFAULT_INI_SECTION
+import netsuite_bbc as netsuite
+from netsuite_bbc import config
+from netsuite_bbc.constants import DEFAULT_INI_PATH, DEFAULT_INI_SECTION
 
 
 def _set_log_level(log_level):

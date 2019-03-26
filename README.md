@@ -13,8 +13,8 @@ Make requests to NetSuite Web Services
 
 Programmatic use only:
 
-    pip install netsuite
+    pip install netsuite-bbc-python
 
 With CLI support:
 
-    pip install netsuite[cli]
+    pip install netsuite-bbc-python[cli]
