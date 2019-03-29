@@ -77,7 +77,8 @@ class NetSuite:
         wsdl_url: str = None,
         cache: zeep.cache.Base = None,
         session: requests.Session = None,
-        sandbox: bool = None
+        sandbox: bool = None,
+        max_history_length: int = 10,
     ) -> None:
 
         if sandbox is not None:
@@ -97,7 +98,7 @@ class NetSuite:
         self.__cache = cache
         self.__session = session
 
-        self.history = HistoryPlugin(maxlen=10)
+        self.history = HistoryPlugin(maxlen=max_history_length)
 
     @cached_property
     def wsdl_url(self) -> str:
