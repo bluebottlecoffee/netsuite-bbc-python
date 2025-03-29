@@ -64,6 +64,7 @@ def WebServiceCall(
 
 class NetSuite:
     version = '2018.1.0'
+    company_url_tmpl = 'https://{account_id}.suitetalk.api.netsuite.com'
     wsdl_url_tmpl = 'https://{account_id}.suitetalk.api.netsuite.com/wsdl/v{underscored_version}/netsuite.wsdl'
 
     def __repr__(self) -> str:
@@ -75,6 +76,7 @@ class NetSuite:
         *,
         version: str = None,
         wsdl_url: str = None,
+        use_account_specific_endpoint: bool = False,
         cache: zeep.cache.Base = None,
         session: requests.Session = None,
         sandbox: bool = None,
@@ -95,6 +97,7 @@ class NetSuite:
 
         self.__config = self._make_config(config)
         self.__wsdl_url = wsdl_url
+        self.__use_account_specific_endpoint = use_account_specific_endpoint
         self.__cache = cache
         self.__session = session
 
@@ -103,6 +106,10 @@ class NetSuite:
     @cached_property
     def wsdl_url(self) -> str:
         return self.__wsdl_url or self._generate_wsdl_url()
+
+    @cached_property
+    def company_url(self) -> str:
+        return self._generate_company_url()
 
     @cached_property
     def cache(self) -> zeep.cache.Base:
@@ -130,7 +137,19 @@ class NetSuite:
 
     @property
     def service(self) -> zeep.client.ServiceProxy:
+        if self.__use_account_specific_endpoint:
+            return self.__service_override
+
         return self.client.service
+
+    @cached_property
+    def __service_override(self) -> zeep.client.ServiceProxy:
+        default_service = self.client.service
+        default_path = default_service._binding_options.get('address').split('.com/')[1]
+
+        account_specific_endpoint = f'{self.company_url}/{default_path}'
+
+        return self.client.create_service(default_service._binding.name, account_specific_endpoint)
 
     def _make_config(
         self,
@@ -151,6 +170,12 @@ class NetSuite:
     def _generate_wsdl_url(self) -> str:
         return self.wsdl_url_tmpl.format(
             underscored_version=self.underscored_version,
+            # https://followingnetsuite.wordpress.com/2018/10/18/suitetalk-sandbox-urls-addendum/
+            account_id=self.config.account.lower().replace('_', '-'),
+        )
+
+    def _generate_company_url(self) -> str:
+        return self.company_url_tmpl.format(
             # https://followingnetsuite.wordpress.com/2018/10/18/suitetalk-sandbox-urls-addendum/
             account_id=self.config.account.lower().replace('_', '-'),
         )
