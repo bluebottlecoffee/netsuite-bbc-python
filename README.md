@@ -1,3 +1,7 @@
+> [!WARNING]
+> This repository is archived and no longer maintained. The fork was used in a number of NetSuite-related DAGs, which were retired in June 2026.
+
+
 # netsuite
 
 [![Travis CI build status (Linux)](https://travis-ci.org/jmagnusson/netsuite.svg?branch=master)](https://travis-ci.org/jmagnusson/netsuite)
